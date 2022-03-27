@@ -119,14 +119,17 @@ const displayController = (() => {
     const gameOver = (winner) => {
         switch (winner) {
             case 'x':
+                navi.gameIsOver = true;
                 endText.textContent = `${gameFlow.players[0].name} is the Winner!`
                 navi.toggleGameOver();
                 break;
             case 'o':
+                navi.gameIsOver = true;
                 endText.textContent = `${gameFlow.players[1].name} is the Winner!`
                 navi.toggleGameOver();
                 break;
             case 'draw':
+                navi.gameIsOver = true;
                 endText.textContent = 'Its a Draw!'
                 navi.toggleGameOver();
                 break;
@@ -169,12 +172,17 @@ const gameFlow = (() => {
     return {thisTurn, players, nextTurn, playerTurn}
 })();
 
+// Menu Navigation Module
 const navi = (() => {
     const choose = document.querySelector('.choose');
     const oneP = document.querySelector('.one-player');
     const twoP = document.querySelector('.two-player');
     const menu = document.querySelector('.menu');
     const gameOver = document.querySelector('.game-over');
+    const menuBtn = document.querySelector('.menu-btn');
+    const closeBtns = document.querySelectorAll('.close-btn');
+
+    let gameIsOver = false;
 
     const toggleChoose = () => {
         choose.classList.toggle('show');
@@ -188,15 +196,34 @@ const navi = (() => {
         twoP.classList.toggle('show');
     }
 
-    const toggleMenu = () => {
-        menu.classList.toggle('show');
+    const toggleMenu = (game) => {
+        if (game == true) {
+            gameOver.classList.toggle('show');
+        } else {
+            menu.classList.toggle('show');
+        }
     }
 
     const toggleGameOver = () => {
         gameOver.classList.toggle('show');
     }
 
-    return {toggleChoose, toggleOneP, toggleTwoP, toggleMenu, toggleGameOver}
+    // Event listeners
+    menuBtn.addEventListener('click', () => {
+        toggleMenu(navi.gameIsOver);
+    });
+
+    closeBtns.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            if (index == 0) {
+                toggleGameOver();
+            } else if (index == 1) {
+                toggleMenu();
+            }
+        });
+    });
+
+    return {gameIsOver, toggleChoose, toggleOneP, toggleTwoP, toggleMenu, toggleGameOver}
 })(); 
 
 displayController.boardSetup();
