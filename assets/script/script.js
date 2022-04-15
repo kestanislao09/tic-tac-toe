@@ -1,6 +1,6 @@
 // Module that contains the gameboard.
 const gameBoard = (() => {
-    const markers = [
+    let markers = [
         undefined,
         undefined,
         undefined,
@@ -10,10 +10,9 @@ const gameBoard = (() => {
         undefined,
         undefined,
         undefined,
-        // 'x', 'o', 'x', 'o', 'o', 'x', 'x', 'x', 'o'
     ];
 
-    const spotTaken = [
+    let spotTaken = [
         undefined,
         undefined,
         undefined,
@@ -59,11 +58,15 @@ const gameBoard = (() => {
     };
 
     const resetMarkers = () => {
-        markers.forEach((marker) => {marker = undefined});
+        markers.forEach((marker, index) => {
+            markers[index] = undefined;
+        });
     };
 
     const resetSpotTaken = () => {
-        spotTaken.forEach((spot, index) => {spotTaken[index] = false});
+        spotTaken.forEach((spot, index) => {
+            spotTaken[index] = false;
+        });
     };
 
     return {markers, spotTaken, checkWin, resetMarkers, resetSpotTaken}
@@ -89,7 +92,6 @@ const player = (name, marker) => {
 
 // Module to control the display
 const displayController = (() => {
-    const spots = document.querySelectorAll('.game-spot');
     const endText = document.querySelector('.end-text');
     const turnDisplay = document.querySelector('.turn-display');
     
@@ -100,19 +102,18 @@ const displayController = (() => {
 
     const updateTurnDisp = (player) => {
         turnDisplay.textContent = `It is ${gameFlow.players[player].name}'s turn.`
-    }
+    };
+
+    const clearTurnDisp = () => {
+        turnDisplay.textContent = '';
+    };
     
     const spotHandler = (i) => {
-        if (gameBoard.spotTaken[i] === true) {
-            invalidMove(gameFlow.thisTurn);
-            return;
-        };
-        
         gameFlow.playerTurn(i);
-        updateTurnDisp(gameFlow.thisTurn);
     };
     
     const clear = () => {
+        const spots = document.querySelectorAll('.game-spot');
         spots.forEach(spot => {
             spot.textContent = undefined;
         });
@@ -120,47 +121,52 @@ const displayController = (() => {
     };
 
     const update = (spot, marker) => {
+        const spots = document.querySelectorAll('.game-spot');
         spots[spot].textContent = marker;
     };
 
     const boardSetup = () => {
+        let spots = document.querySelectorAll('.game-spot');
         spots.forEach((spot, index) => {
-            spot.addEventListener('click', () => {
+            spot.addEventListener('click', (e) => {
                 spotHandler(index);
             });
         });
     };
 
     const boardTeardown = () => {
-        spots.forEach(spot => {spot.removeEventListener('click', spotHandler)});
-    }
+        let spots = document.querySelectorAll('.game-spot');
+        spots.forEach((spot) => {
+            spot.replaceWith(spot.cloneNode(true));
+        });
+    };
 
     const gameOver = (winner) => {
         switch (winner) {
             case 'x':
                 navi.gameIsOver = true;
-                endText.textContent = `${gameFlow.players[0].name} is the Winner!`
+                endText.textContent = `${gameFlow.players[0].name} is the Winner!`;
+                clearTurnDisp();
                 navi.toggleGameOver();
-                boardTeardown();
                 break;
             case 'o':
                 navi.gameIsOver = true;
                 endText.textContent = `${gameFlow.players[1].name} is the Winner!`
+                clearTurnDisp();
                 navi.toggleGameOver();
-                boardTeardown();
                 break;
             case 'draw':
                 navi.gameIsOver = true;
                 endText.textContent = 'Its a Draw!'
+                clearTurnDisp();
                 navi.toggleGameOver();
-                boardTeardown();
                 break;
             default:
                 console.log('uh oh')
         };
     };
     
-    return {spots, updateTurnDisp, clear, update, boardSetup, gameOver};
+    return {invalidMove, updateTurnDisp, clearTurnDisp, clear, update, boardSetup, boardTeardown, gameOver};
 })();
 
 // Module to control the flow of gameplay
@@ -179,33 +185,46 @@ const gameFlow = (() => {
         players[1] = player(playerTwo, oh);
         displayController.boardSetup();
         navi.gameIsOver = false;
+        displayController.clearTurnDisp();
         displayController.updateTurnDisp(thisTurn);
     };
     
     const nextTurn = () => {
         if (thisTurn === 0) {
             thisTurn = 1;
-            return;
         } else if (thisTurn === 1) {
             thisTurn = 0;
-            return;
         }
     };
 
     const playerTurn = (i) => {
+        if (navi.gameIsOver === true) {return;}
+        if (gameBoard.spotTaken[i] === true) {
+            displayController.invalidMove(thisTurn);
+            return;
+        }
         players[thisTurn].takeSpot(i);
         gameBoard.checkWin();
+        displayController.clearTurnDisp();
+        displayController.updateTurnDisp(thisTurn);
     };
 
     const restart = () => {
         displayController.clear();
+        displayController.clearTurnDisp();
         gameBoard.resetMarkers();
         gameBoard.resetSpotTaken();
-        thisTurn = 0
-        displayController.updateTurnDisp(thisTurn);
+        navi.gameIsOver = false;
+        thisTurn = 0;
+    };
+
+    const resetPlayers = () => {
+        players.forEach(player => {
+            player = undefined;
+        });
     };
     
-    return {thisTurn, players, start2PGame, nextTurn, playerTurn, restart}
+    return {thisTurn, players, start2PGame, nextTurn, playerTurn, restart, resetPlayers}
 })();
 
 // Menu Navigation Module
@@ -230,7 +249,6 @@ const navi = (() => {
     const playerNameO = document.querySelector('#twoP-nameO');
 
     let gameIsOver = false;
-    
     
     const toggleChoose = () => {
         choose.classList.toggle('show');
@@ -274,6 +292,8 @@ const navi = (() => {
         let playerO = playerNameO.value;
         gameFlow.start2PGame(playerX, playerO);
         toggleTwoP();
+        playerNameX.value = '';
+        playerNameO.value = '';
     });
     
     menuBtn.addEventListener('click', () => {
@@ -292,7 +312,17 @@ const navi = (() => {
 
     samePlayersBtn.addEventListener('click', () => {
         gameFlow.restart();
+        displayController.updateTurnDisp(gameFlow.thisTurn);
         toggleGameOver();
+    });
+
+    newPlayersBtn.addEventListener('click', () => {
+        gameFlow.restart();
+        gameFlow.resetPlayers;
+        displayController.clearTurnDisp();
+        displayController.boardTeardown();
+        toggleGameOver();
+        toggleChoose();
     });
 
     return {gameIsOver, toggleMenu, toggleGameOver}
