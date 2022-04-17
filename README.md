@@ -8,3 +8,10 @@ Tic Tac Toe game
 
 ### 4/15/22
 *0416* Both of the gameover modal's buttons have been hooked up and are working properly now.
+
+### 4/17/22
+*0020* Back buttons have been hooked up and the player name boxes update with player names.
+
+## Future Goals
+ - Add Functionality to 1Player modes
+ - Implement Tailwind & Make it pretty

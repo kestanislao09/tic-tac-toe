@@ -4,6 +4,16 @@ body {
     align-items: center;
 }
 
+a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+}
+
 button {
     background: none;
     color: inherit;

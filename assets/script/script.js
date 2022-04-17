@@ -164,8 +164,15 @@ const displayController = (() => {
                 clearTurnDisp();
                 navi.toggleGameOver();
                 break;
+            case 'end':
+                navi.gameIsOver = true;
+                endText.textContent = 'Game Over!'
+                clearTurnDisp();
+                navi.toggleMenu();
+                navi.toggleGameOver();
+                break;
             default:
-                console.log('uh oh')
+                console.log('uh oh');
         };
     };
     
@@ -219,7 +226,6 @@ const gameFlow = (() => {
         displayController.clearTurnDisp();
         gameBoard.resetMarkers();
         gameBoard.resetSpotTaken();
-        navi.gameIsOver = false;
         thisTurn = 0;
     };
 
@@ -250,11 +256,12 @@ const navi = (() => {
     const backBtns = document.querySelectorAll('.back-btn');
     const samePlayersBtn = document.querySelector('.same-players');
     const newPlayersBtn = document.querySelector('.new-players');
+    const endGameBtn = document.querySelector('.end-game-btn');
     // Inputs
     const playerNameX = document.querySelector('#twoP-nameX');
     const playerNameO = document.querySelector('#twoP-nameO');
 
-    let gameIsOver = false;
+    let gameIsOver
     
     const toggleChoose = () => {
         choose.classList.toggle('show');
@@ -300,10 +307,17 @@ const navi = (() => {
         toggleTwoP();
         playerNameX.value = '';
         playerNameO.value = '';
+        gameIsOver = false;
     });
     
     menuBtn.addEventListener('click', () => {
         toggleMenu(navi.gameIsOver);
+    });
+
+    endGameBtn.addEventListener('click', (e) =>{
+        if (gameIsOver === false) {
+            displayController.gameOver('end');
+        };  
     });
     
     closeBtns.forEach((btn, index) => {
@@ -336,7 +350,7 @@ const navi = (() => {
 
     newPlayersBtn.addEventListener('click', () => {
         gameFlow.restart();
-        gameFlow.resetPlayers;
+        gameFlow.resetPlayers();
         displayController.clearTurnDisp();
         displayController.boardTeardown();
         toggleGameOver();
