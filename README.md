@@ -11,6 +11,7 @@ Tic Tac Toe game
 
 ### 4/17/22
 *0020* Back buttons have been hooked up and the player name boxes update with player names.
+*0227* Menu buttons now work!
 
 ## Future Goals
  - Add Functionality to 1Player modes
