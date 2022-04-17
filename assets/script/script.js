@@ -80,10 +80,6 @@ const player = (name, marker) => {
         displayController.update(x, marker);
         gameBoard.markers[x] = marker;
         gameBoard.spotTaken[x] = true;
-        
-        if (gameFlow.onePlayerMode == true) {
-            computer.play();
-        };
     };
     
     return {name, marker, takeSpot};
@@ -123,6 +119,13 @@ const displayController = (() => {
     const update = (spot, marker) => {
         const spots = document.querySelectorAll('.game-spot');
         spots[spot].textContent = marker;
+    };
+
+    const updatePlayerNames = () => {
+        const nameBoxes = document.querySelectorAll('.name-box');
+        nameBoxes.forEach((box, index) => {
+            box.textContent = gameFlow.players[index].name
+        });
     };
 
     const boardSetup = () => {
@@ -166,14 +169,15 @@ const displayController = (() => {
         };
     };
     
-    return {invalidMove, updateTurnDisp, clearTurnDisp, clear, update, boardSetup, boardTeardown, gameOver};
+    return {invalidMove, updateTurnDisp, clearTurnDisp, clear, update, updatePlayerNames, boardSetup, boardTeardown, gameOver};
 })();
 
 // Module to control the flow of gameplay
 const gameFlow = (() => {
-    // Stores the player objects.
     const ex = 'x'
     const oh = 'o'
+
+    // Stores the player objects.
     const players = []
 
     let thisTurn = 0;
@@ -183,6 +187,7 @@ const gameFlow = (() => {
     const start2PGame = (playerOne, playerTwo) => {
         players[0] = player(playerOne, ex);
         players[1] = player(playerTwo, oh);
+        displayController.updatePlayerNames();
         displayController.boardSetup();
         navi.gameIsOver = false;
         displayController.clearTurnDisp();
@@ -242,6 +247,7 @@ const navi = (() => {
     const start2P = document.querySelector('.start2P-btn')
     const menuBtn = document.querySelector('.menu-btn');
     const closeBtns = document.querySelectorAll('.close-btn');
+    const backBtns = document.querySelectorAll('.back-btn');
     const samePlayersBtn = document.querySelector('.same-players');
     const newPlayersBtn = document.querySelector('.new-players');
     // Inputs
@@ -306,6 +312,18 @@ const navi = (() => {
                 toggleGameOver();
             } else if (index == 1) {
                 toggleMenu();
+            }
+        });
+    });
+
+    backBtns.forEach((btn, index) => {
+        btn.addEventListener('click', (e) => {
+            if (index == 0) {
+                toggleOneP();
+                toggleChoose();
+            } else if (index == 1) {
+                toggleTwoP();
+                toggleChoose();
             }
         });
     });
